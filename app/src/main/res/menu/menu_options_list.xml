@@ -1,4 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!-- オーバーフローメニュー
+          showAsActionがandroidでなくappである理由は、MainActivityがAppCompatActivityを継承したものだから-->
+
+    <!-- "現在地" -->
+    <item
+        android:id="@+id/ofMenuOptionGPS"
+        app:showAsAction="never"
+        android:title="@string/strid_menu_list_options_GPS" />
+
+    <!-- "アプリ終了" -->
+    <item
+        android:id="@+id/ofMenuOptionExit"
+        app:showAsAction="never"
+        android:title="@string/strid_menu_list_options_exit" />
 </menu>

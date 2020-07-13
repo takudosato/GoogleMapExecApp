@@ -1,3 +1,10 @@
 <resources>
-    <string name="app_name">GoogleMapExecApp</string>
+    <string name="app_name">アンドロイド課題アプリ</string>
+    <string name="strid_bt_map">Map表示</string>
+    <string name="strid_menu_list_options_exit">終了</string>
+    <string name="strid_menu_list_options_GPS">現在地</string>
+    <string name="strid_latitude">緯度</string>
+    <string name="strid_longitude">経度</string>
+    <string name="strid_history">履歴</string>
+    <string name="strid_hint_keyword">キーワードを入力</string>
 </resources>
