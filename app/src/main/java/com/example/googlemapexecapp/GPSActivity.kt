@@ -7,7 +7,7 @@ import android.view.MenuItem
 
 class GPSActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.d("GPSA", "onCreate in")
+        Log.d("GPSActivity", "onCreate in")
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_g_p_s)
@@ -16,7 +16,7 @@ class GPSActivity : AppCompatActivity() {
         //supportActionBarはNullableなので、セーフコール演算子を使ってメソッドを呼び出す
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        Log.d("GPSA", "onCreate out")
+        Log.d("GPSActivity", "onCreate out")
     }
 
     /**
@@ -32,11 +32,11 @@ class GPSActivity : AppCompatActivity() {
 
         //戻るボタンはandroid.R.id.home
         if (item.itemId == android.R.id.home) {
-            Log.d("GPSA", "onOptionsItemSelected finish()")
+            Log.d("GPSActivity", "onOptionsItemSelected finish()")
             finish()//ここで関数は終わらない
         }
 
-        Log.d("GPSA", "onOptionsItemSelected out")
+        Log.d("GPSActivity", "onOptionsItemSelected out")
 
         //親クラスの戻り値
         return super.onOptionsItemSelected(item)

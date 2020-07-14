@@ -58,7 +58,10 @@ class MainActivity : AppCompatActivity() {
 
             //終了が選択された場合、終了処理を行う
             R.id.ofMenuOptionExit -> {
-                return true
+                //finishAndRemoveTask()はAPILevel21以降
+                //finish()の場合、excludeFromRecents="true"を設定しないとタスク画面の履歴に残る
+                Log.d("MainActivity", "onOptionsItemSelected finish()")
+                finish()
             }
         }
 
