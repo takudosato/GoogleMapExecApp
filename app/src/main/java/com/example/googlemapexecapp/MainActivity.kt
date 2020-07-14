@@ -4,18 +4,69 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
 import java.net.URLEncoder
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity()   {
+
+    //キーワードエディットテキストオブジェクト
+    private lateinit var etKeyword: EditText
+
+    /**
+     * MainActivityのonCreate
+     *
+     * @param savedInstanceState
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
+
         Log.d("MainActivity", "onCreate in")
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        //Map表示ボタンのオブジェクト取得
+        val mapBtn = findViewById<Button>(R.id.btMapKeyword)
+        //初期化ではクリックを無効にする
+        mapBtn.isEnabled = false
+
+        //キーワードエディットテキストオブジェクト取得
+        etKeyword = findViewById<EditText>(R.id.etInputKeyword)
+
+        //TextWatcherでキーワード入力状況を監視する
+        etKeyword.addTextChangedListener(object : TextWatcher {
+
+            //静的関数の実装
+            override fun afterTextChanged(s: Editable) {}
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+
+            //文字列入力中に呼び出される
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+
+                Log.d("MainActivity", "onTextChanged in count = " + count)
+
+                //エディットボックスが空欄の場合は、ボタンを無効とする
+                when(count) {
+                    0 -> {
+                        //ボタンをを無効にする
+                        mapBtn.isEnabled = false
+                    }
+                    else -> {
+                        //ボタンを有効にする
+                        mapBtn.isEnabled = true
+                    }
+                }
+
+                Log.d("MainActivity", "onTextChanged out")
+            }
+        })
+
         Log.d("MainActivity", "onCreate out")
     }
 
@@ -83,7 +134,7 @@ class MainActivity : AppCompatActivity() {
         Log.d("MainActivity", "onMapShowButtonClick in")
 
         //検索するキーワードEditTextのViewを取得
-        val etKeyword = findViewById<EditText>(R.id.etInputKeyword)
+
         var keyword = etKeyword.text.toString()
 
         //キーワード文字列をURLエンコードする
