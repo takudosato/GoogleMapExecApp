@@ -11,7 +11,7 @@
         android:theme="@style/AppTheme">
         <activity android:name=".GPSActivity"></activity>
         <activity android:name=".MainActivity"
-                  android:excludeFromRecents="true">
+                android:excludeFromRecents="true">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -1,11 +1,15 @@
 package com.example.googlemapexecapp
 
 import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.EditText
+import java.net.URLEncoder
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,9 +74,36 @@ class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    /**
+     * Map表示ボタン押下時の処理。layoutのxmlに定義する
+     *
+     * @param view
+     */
+    fun onMapShowButtonClick(view: View) {
+        Log.d("MainActivity", "onMapShowButtonClick in")
+
+        //検索するキーワードEditTextのViewを取得
+        val etKeyword = findViewById<EditText>(R.id.etInputKeyword)
+        var keyword = etKeyword.text.toString()
+
+        //キーワード文字列をURLエンコードする
+        keyword = URLEncoder.encode(keyword, "UTF-8")
+
+        //マップアプリと連携する、URIオブジェクトを作成
+        // "?q="を使ってURIエンコードされたクエリ文字列を渡したインテントリクエスト
+        val uriStr = "geo:0,0?q=${keyword}"
+        val gmmIntentUri = Uri.parse(uriStr)
+        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+        //mapIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        //mapIntent.setPackage("com.google.android.apps.maps")
+        startActivity(mapIntent)
+
+        Log.d("MainActivity", "onMapShowButtonClick out")
+    }
+
 }
 
 /*
-Log.d("MA onCreate", "in")
-Log.d("MA onCreate", "out")
+Log.d("MainActivity", "onMapShowButtonClick in")
+        Log.d("MainActivity", "onMapShowButtonClick out")
 */
