@@ -1,6 +1,12 @@
 package com.example.googlemapexecapp
 
+import android.Manifest
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -12,6 +18,8 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
+import androidx.core.app.ActivityCompat
 import java.net.URLEncoder
 
 class MainActivity : AppCompatActivity()   {
@@ -30,6 +38,13 @@ class MainActivity : AppCompatActivity()   {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //許可を求めるダイアログを表示する
+            val permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+            ActivityCompat.requestPermissions(this@MainActivity, permissions, 1000)
+            return
+        }
 
         //Map表示ボタンのオブジェクト取得
         val mapBtn = findViewById<Button>(R.id.btMapKeyword)
@@ -69,6 +84,25 @@ class MainActivity : AppCompatActivity()   {
 
         Log.d("MainActivity", "onCreate out")
     }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        //ACCESS_LOCATIONに対するパーミッションで許可が選択されたら
+        if(requestCode == 1000 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            //LocationManagerオブジェクトを取得
+            val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            //位置情報が更新された際のリスナオブジェクトを生成
+           // val locationListener = GPSLocationListener()
+
+            if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return
+            }
+        }
+    }
+
 
     /**
      * onCreateOptionsMenu
@@ -146,7 +180,7 @@ class MainActivity : AppCompatActivity()   {
         val gmmIntentUri = Uri.parse(uriStr)
         val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
         //mapIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        //mapIntent.setPackage("com.google.android.apps.maps")
+        mapIntent.setPackage("com.google.android.apps.maps")
         startActivity(mapIntent)
 
         Log.d("MainActivity", "onMapShowButtonClick out")
