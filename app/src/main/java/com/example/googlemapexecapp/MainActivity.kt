@@ -39,13 +39,6 @@ class MainActivity : AppCompatActivity()   {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            //許可を求めるダイアログを表示する
-            val permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
-            ActivityCompat.requestPermissions(this@MainActivity, permissions, 1000)
-            return
-        }
-
         //Map表示ボタンのオブジェクト取得
         val mapBtn = findViewById<Button>(R.id.btMapKeyword)
         //初期化ではクリックを無効にする
@@ -85,6 +78,13 @@ class MainActivity : AppCompatActivity()   {
         Log.d("MainActivity", "onCreate out")
     }
 
+    /**
+     * パーミッションダイアログの結果取得
+     *
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -160,6 +160,7 @@ class MainActivity : AppCompatActivity()   {
     }
 
     /**
+     * onMapShowButtonClick
      * Map表示ボタン押下時の処理。layoutのxmlに定義する
      *
      * @param view
@@ -187,8 +188,3 @@ class MainActivity : AppCompatActivity()   {
     }
 
 }
-
-/*
-Log.d("MainActivity", "onMapShowButtonClick in")
-        Log.d("MainActivity", "onMapShowButtonClick out")
-*/

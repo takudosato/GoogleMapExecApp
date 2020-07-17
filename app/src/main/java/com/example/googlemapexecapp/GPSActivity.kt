@@ -1,6 +1,7 @@
 package com.example.googlemapexecapp
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -18,9 +19,8 @@ import androidx.core.app.ActivityCompat
 
 class GPSActivity : AppCompatActivity() {
 
-    //GPS情報
-    private var _latitude = 0.0
-    private var _longitude = 0.0
+    //GPS情報を持つクラス
+    private lateinit var gps: GPS
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d("GPSActivity", "onCreate in")
@@ -32,44 +32,33 @@ class GPSActivity : AppCompatActivity() {
         //supportActionBarはNullableなので、セーフコール演算子を使ってメソッドを呼び出す
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        //GPS機能を有効にする
-        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        val locationListener = GPSLocationListener()
-        if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        gps = GPS(this)
+        if(!gps.StartGPS()) {
             return
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
+
+        //新たなGPS位置情報を受信したら、表示を更新する
+        gps.changeGPSpos = {
+            dispGPSInfo()
+        }
 
         Log.d("GPSActivity", "onCreate out")
     }
 
     /**
-     * GPSLocationListener
-     *
+     * dispGPSInfo
+     * GPS情報を表示する
      */
-    private inner class GPSLocationListener : LocationListener {
-        override fun onLocationChanged(p0: Location) {
+    private fun dispGPSInfo() {
+        //GPS情報を表示
+        val tvlatitude = findViewById<TextView>(R.id.tvlatitudevalue)
+        tvlatitude.text = gps._latitude.toString()
+        val tvlongitude = findViewById<TextView>(R.id.tvlongitudevalue)
+        tvlongitude.text = gps._longitude.toString()
+    }
 
-            Log.d("GPSLocationListener", "onLocationChanged in")
+    public fun onChangeDPS() {
 
-            //GPS情報を取得
-            _latitude = p0.latitude
-            _longitude = p0.longitude
-
-            //GPS情報を表示
-            val tvlatitude = findViewById<TextView>(R.id.tvlatitudevalue)
-            tvlatitude.text = _latitude.toString()
-            val tvlongitude = findViewById<TextView>(R.id.tvlongitudevalue)
-            tvlongitude.text = _longitude.toString()
-
-            Log.d("GPSLocationListener", "onLocationChanged out")
-        }
-
-        override fun onProviderDisabled(provider: String) {}
-
-        override fun onProviderEnabled(provider: String) {}
-
-        override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
     }
 
     /**
@@ -105,7 +94,7 @@ class GPSActivity : AppCompatActivity() {
         Log.d("GPSActivity", "onMapShowButtonClick in")
 
         //GPS情報からURIを作成
-        val uriStr = "geo:${_latitude},${_longitude}"
+        val uriStr = "geo:${gps._latitude},${gps._longitude}"
         val uri = Uri.parse(uriStr)
 
         //URIでgooglemapを起動
