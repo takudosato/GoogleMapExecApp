@@ -13,13 +13,15 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import java.net.URLEncoder
 
 class MainActivity : AppCompatActivity()   {
@@ -75,7 +77,93 @@ class MainActivity : AppCompatActivity()   {
             }
         })
 
+
+        //RecyclerView設定
+        val lvMenu = findViewById<RecyclerView>(R.id.recycler_view)
+        //LinearLayoutManagerオブジェクトを生成。
+        val layout = LinearLayoutManager(applicationContext)
+        //レイアウトマネージャーを登録
+        lvMenu.layoutManager = layout
+
+        //サンプルのListオブジェクトを用意。
+        val menuList: MutableList<MutableMap<String, String>> = mutableListOf()
+        //「から揚げ定食」のデータを格納するMapオブジェクトの用意とmenuListへのデータ登録。
+        var menus = mutableMapOf("keyword" to "東京駅", "daytime" to "800", "desc" to "若鳥のから揚げにサラダ、ご飯とお味噌汁が付きます。")
+        menuList.add(menus)
+        //「ハンバーグ定食」のデータを格納するMapオブジェクトの用意とmenuListへのデータ登録。
+        menus = mutableMapOf("keyword" to "京都駅", "daytime" to "850", "desc" to "手ごねハンバーグにサラダ、ご飯とお味噌汁が付きます。")
+        menuList.add(menus)
+        //以下データ登録の繰り返し。
+        menus = mutableMapOf("keyword" to "庄内空港", "daytime" to "850", "desc" to "すりおろし生姜を使った生姜焼きにサラダ、ご飯とお味噌汁が付きます。")
+        menuList.add(menus)
+
+        //アダプタオブジェクトを生成。
+        val adapter = RecyclerListAdapter(menuList)
+        //RecyclerViewにアダプタオブジェクトを設定。
+        lvMenu.adapter = adapter
+
+        //区切り専用のオブジェクトを生成。
+        val decorator = DividerItemDecoration(applicationContext, layout.orientation)
+        //RecyclerViewに区切り線オブジェクトを設定。
+        lvMenu.addItemDecoration(decorator)
+
         Log.d("MainActivity", "onCreate out")
+    }
+
+    /**
+     * RecyclerViewのビューホルダクラス。
+     */
+    private inner class RecyclerListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        /**
+         * リスト1行分中でキーワードを表示する画面部品。
+         */
+        var tvKeyword: TextView
+        /**
+         * リスト1行分中で日時を表示する画面部品。
+         */
+        var tvDaytime: TextView
+
+        init {
+            //引数で渡されたリスト1行分の画面部品中から表示に使われるTextViewを取得。
+            tvKeyword = itemView.findViewById(R.id.tvKeyword)
+            tvDaytime = itemView.findViewById(R.id.tvDaytime)
+        }
+    }
+
+    /**
+     * RecyclerViewのアダプタクラス。
+     */
+    private inner class RecyclerListAdapter(private val _listData: MutableList<MutableMap<String, String>>): RecyclerView.Adapter<RecyclerListViewHolder>() {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerListViewHolder {
+            //レイアウトインフレータを取得。
+            val inflater = LayoutInflater.from(applicationContext)
+            //row.xmlをインフレートし、1行分の画面部品とする。
+            val view = inflater.inflate(R.layout.kwlist, parent, false)
+            //インフレートされた1行分の画面部品にリスナを設定。
+            view.setOnClickListener(ItemClickListener())
+            //ビューホルダオブジェクトを生成。
+            val holder = RecyclerListViewHolder(view)
+            //生成したビューホルダをリターン。
+            return holder
+        }
+
+        override fun onBindViewHolder(holder: RecyclerListViewHolder, position: Int) {
+            //リストデータから該当1行分のデータを取得。
+            val item = _listData[position]
+            //キーワード文字列を取得。
+            val keyword = item["keyword"] as String
+            //日時を取得。
+            val daytime = item["daytime"] as String
+
+            //メニュー名と金額をビューホルダ中のTextViewに設定。
+            holder.tvKeyword.text = keyword
+            holder.tvDaytime.text = daytime
+        }
+
+        override fun getItemCount(): Int {
+            //リストデータ中の件数をリターン。
+            return _listData.size
+        }
     }
 
     /**
@@ -103,6 +191,21 @@ class MainActivity : AppCompatActivity()   {
         }
     }
 
+    /**
+     * リストをタップした時のリスナクラス。
+     */
+    private inner class ItemClickListener : View.OnClickListener {
+        override fun onClick(view: View) {
+            //タップされたLinearLayout内にあるメニュー名表示TextViewを取得。
+            val tvMenuName = view.findViewById<TextView>(R.id.tvKeyword)
+            //メニュー名表示TextViewから表示されているメニュー名文字列を取得。
+            val menuName = tvMenuName.text.toString()
+            //トーストに表示する文字列を生成。
+            val msg = "ご注文" + menuName
+            //トースト表示。
+            Toast.makeText(applicationContext, msg, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     /**
      * onCreateOptionsMenu
@@ -187,4 +290,6 @@ class MainActivity : AppCompatActivity()   {
         Log.d("MainActivity", "onMapShowButtonClick out")
     }
 
+
 }
+
