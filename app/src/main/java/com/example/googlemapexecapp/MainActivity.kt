@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.text.format.DateFormat
 import android.util.Log
 import android.view.*
 import android.widget.Button
@@ -23,13 +24,18 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.net.URLEncoder
+import java.util.*
 
 class MainActivity : AppCompatActivity()   {
 
     //キーワードエディットテキストオブジェクト
     private lateinit var etKeyword: EditText
 
-    /**
+    private val keylist = KeywordList()
+
+    private lateinit var adapter: RecyclerListAdapter
+
+        /**
      * MainActivityのonCreate
      *
      * @param savedInstanceState
@@ -41,10 +47,25 @@ class MainActivity : AppCompatActivity()   {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //許可を求めるダイアログを表示する
+            val permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+            ActivityCompat.requestPermissions(this, permissions, 1000)
+            return
+        }
+        /*
+        val gpsc = GPS(this)
+        if(!gpsc.CheckPermission()){
+            return
+        }
+
+         */
+
         //Map表示ボタンのオブジェクト取得
         val mapBtn = findViewById<Button>(R.id.btMapKeyword)
         //初期化ではクリックを無効にする
         mapBtn.isEnabled = false
+
 
         //キーワードエディットテキストオブジェクト取得
         etKeyword = findViewById<EditText>(R.id.etInputKeyword)
@@ -85,20 +106,8 @@ class MainActivity : AppCompatActivity()   {
         //レイアウトマネージャーを登録
         lvMenu.layoutManager = layout
 
-        //サンプルのListオブジェクトを用意。
-        val menuList: MutableList<MutableMap<String, String>> = mutableListOf()
-        //「から揚げ定食」のデータを格納するMapオブジェクトの用意とmenuListへのデータ登録。
-        var menus = mutableMapOf("keyword" to "東京駅", "daytime" to "800", "desc" to "若鳥のから揚げにサラダ、ご飯とお味噌汁が付きます。")
-        menuList.add(menus)
-        //「ハンバーグ定食」のデータを格納するMapオブジェクトの用意とmenuListへのデータ登録。
-        menus = mutableMapOf("keyword" to "京都駅", "daytime" to "850", "desc" to "手ごねハンバーグにサラダ、ご飯とお味噌汁が付きます。")
-        menuList.add(menus)
-        //以下データ登録の繰り返し。
-        menus = mutableMapOf("keyword" to "庄内空港", "daytime" to "850", "desc" to "すりおろし生姜を使った生姜焼きにサラダ、ご飯とお味噌汁が付きます。")
-        menuList.add(menus)
-
         //アダプタオブジェクトを生成。
-        val adapter = RecyclerListAdapter(menuList)
+        adapter = RecyclerListAdapter(keylist.get())
         //RecyclerViewにアダプタオブジェクトを設定。
         lvMenu.adapter = adapter
 
@@ -106,6 +115,8 @@ class MainActivity : AppCompatActivity()   {
         val decorator = DividerItemDecoration(applicationContext, layout.orientation)
         //RecyclerViewに区切り線オブジェクトを設定。
         lvMenu.addItemDecoration(decorator)
+
+
 
         Log.d("MainActivity", "onCreate out")
     }
@@ -137,7 +148,7 @@ class MainActivity : AppCompatActivity()   {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerListViewHolder {
             //レイアウトインフレータを取得。
             val inflater = LayoutInflater.from(applicationContext)
-            //row.xmlをインフレートし、1行分の画面部品とする。
+            //lwlist.xmlをインフレートし、1行分の画面部品とする。
             val view = inflater.inflate(R.layout.kwlist, parent, false)
             //インフレートされた1行分の画面部品にリスナを設定。
             view.setOnClickListener(ItemClickListener())
@@ -189,6 +200,9 @@ class MainActivity : AppCompatActivity()   {
                 return
             }
         }
+
+        finish()
+        return
     }
 
     /**
@@ -196,14 +210,28 @@ class MainActivity : AppCompatActivity()   {
      */
     private inner class ItemClickListener : View.OnClickListener {
         override fun onClick(view: View) {
-            //タップされたLinearLayout内にあるメニュー名表示TextViewを取得。
-            val tvMenuName = view.findViewById<TextView>(R.id.tvKeyword)
+
+            //タップされたLinearLayout内にあるキーワードTextViewを取得。
+            val tvKeyword = view.findViewById<TextView>(R.id.tvKeyword)
             //メニュー名表示TextViewから表示されているメニュー名文字列を取得。
-            val menuName = tvMenuName.text.toString()
-            //トーストに表示する文字列を生成。
-            val msg = "ご注文" + menuName
-            //トースト表示。
-            Toast.makeText(applicationContext, msg, Toast.LENGTH_SHORT).show()
+            val keyword = tvKeyword.text.toString()
+
+            //キーワードでGoogleMapを起動する
+            val mapIntent = Gglmap.makeIntent(keyword)
+            startActivity(mapIntent)
+
+            //-----------------------------
+            //現在時刻取得
+            val date: Date = Date()
+            val daytime: String = DateFormat.format("yyyy/MM/dd kk:mm:ss", date).toString()
+
+            //-----------------------------
+            //キーワードと時刻をリストに登録
+            keylist.add(keyword, daytime)
+
+            //-----------------------------
+            //アダプターにリストの再描画を指示する
+            adapter.notifyDataSetChanged()
         }
     }
 
@@ -271,21 +299,29 @@ class MainActivity : AppCompatActivity()   {
     fun onMapShowButtonClick(view: View) {
         Log.d("MainActivity", "onMapShowButtonClick in")
 
-        //検索するキーワードEditTextのViewを取得
-
-        var keyword = etKeyword.text.toString()
-
-        //キーワード文字列をURLエンコードする
-        keyword = URLEncoder.encode(keyword, "UTF-8")
-
-        //マップアプリと連携する、URIオブジェクトを作成
-        // "?q="を使ってURIエンコードされたクエリ文字列を渡したインテントリクエスト
-        val uriStr = "geo:0,0?q=${keyword}"
-        val gmmIntentUri = Uri.parse(uriStr)
-        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
-        //mapIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        mapIntent.setPackage("com.google.android.apps.maps")
+        //----------------------------
+        //EditTextのキーワードでGoogleMapを起動する
+        var keywordstr = etKeyword.text.toString()
+        val mapIntent = Gglmap.makeIntent(keywordstr)
         startActivity(mapIntent)
+
+        //-----------------------------
+        //　Editbox空欄化
+        etKeyword.setText(null)
+
+        //-----------------------------
+        //現在時刻取得
+        val date: Date = Date()
+        val daytime: String = DateFormat.format("yyyy/MM/dd kk:mm:ss", date).toString()
+
+        //-----------------------------
+        //キーワードと時刻をリストに登録
+        keylist.add(keywordstr, daytime)
+
+        //-----------------------------
+        //アダプターにリストの再描画を指示する
+        adapter.notifyDataSetChanged()
+
 
         Log.d("MainActivity", "onMapShowButtonClick out")
     }
