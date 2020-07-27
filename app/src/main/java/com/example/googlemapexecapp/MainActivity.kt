@@ -35,6 +35,9 @@ class MainActivity : AppCompatActivity()   {
 
     private lateinit var adapter: RecyclerListAdapter
 
+    //データベースヘルパーオブジェクト
+    private val _helper = DatabaseHelper(this@MainActivity)
+
         /**
      * MainActivityのonCreate
      *
@@ -119,6 +122,17 @@ class MainActivity : AppCompatActivity()   {
 
 
         Log.d("MainActivity", "onCreate out")
+    }
+
+
+    override fun onDestroy() {
+
+        //-----------------------
+        // 情報をDBに登録する
+
+
+        _helper.close()
+        super.onDestroy()
     }
 
     /**
@@ -221,13 +235,8 @@ class MainActivity : AppCompatActivity()   {
             startActivity(mapIntent)
 
             //-----------------------------
-            //現在時刻取得
-            val date: Date = Date()
-            val daytime: String = DateFormat.format("yyyy/MM/dd kk:mm:ss", date).toString()
-
-            //-----------------------------
             //キーワードと時刻をリストに登録
-            keylist.add(keyword, daytime)
+            keylist.add(keyword)
 
             //-----------------------------
             //アダプターにリストの再描画を指示する
@@ -301,7 +310,7 @@ class MainActivity : AppCompatActivity()   {
 
         //----------------------------
         //EditTextのキーワードでGoogleMapを起動する
-        var keywordstr = etKeyword.text.toString()
+        val keywordstr = etKeyword.text.toString()
         val mapIntent = Gglmap.makeIntent(keywordstr)
         startActivity(mapIntent)
 
@@ -316,7 +325,7 @@ class MainActivity : AppCompatActivity()   {
 
         //-----------------------------
         //キーワードと時刻をリストに登録
-        keylist.add(keywordstr, daytime)
+        keylist.add(keywordstr)
 
         //-----------------------------
         //アダプターにリストの再描画を指示する
