@@ -13,12 +13,15 @@ class DatabaseHelper(context: Context): SQLiteOpenHelper(context, DATABASE_NAME,
         private const val DATABASE_VERSION = 1
     }
 
+    /**
+     *
+     */
     override fun onCreate(db: SQLiteDatabase) {
         //テーブル作成用SQL文字列の作成
         val sb = StringBuilder()
         sb.append("CREATE TABLE cocktailmemos(")
-        sb.append("_id TEXT PRIMARY KEY, ")
-        sb.append("keyword TEXT, ")
+        sb.append("keyword TEXT PRIMARY KEY, ")
+        sb.append("daytime TEXT")
         sb.append(");")
         val sql = sb.toString()
 
