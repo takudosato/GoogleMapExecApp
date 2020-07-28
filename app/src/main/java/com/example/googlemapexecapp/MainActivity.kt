@@ -73,34 +73,7 @@ class MainActivity : AppCompatActivity()   {
         // 情報をDBに登録する
         //データベースヘルパークラスからデータベースオブジェクトを取得
         val db = _helper.writableDatabase
-
-
-
-
-        //主キーによる検索SQL文字列の用意
-        val sql = "SELECT * FROM cocktailmemos"
-        //SQLの実行(クエリ)
-        val cursor = db.rawQuery(sql, null)
-
-        //データベースから取得した値を格納する変数の用意
-        var kw = ""
-        var dt = ""
-        //SQL実行の戻り値であるカーソルオブジェクトをループさせてデータベースのデータを取得する
-        while(cursor.moveToNext()) {
-            //カラムインデックス値を取得
-            val idxkw = cursor.getColumnIndex("keyword")
-            //カラムのインデックス値を元に実際のデータを取得
-            kw = cursor.getString(idxkw)
-            val idxdt = cursor.getColumnIndex("daytime")
-            //カラムのインデックス値を元に実際のデータを取得
-            dt = cursor.getString(idxdt)
-
-            //-----------------------------
-            //キーワードと時刻をリストに登録
-            keylist.add(kw, dt, true)
-
-        }
-
+        keylist.startList(db)
 
         //キーワードエディットテキストオブジェクト取得
         etKeyword = findViewById<EditText>(R.id.etInputKeyword)
@@ -161,11 +134,6 @@ class MainActivity : AppCompatActivity()   {
         //Databaseの全ての情報を再登録
         //データベースヘルパークラスからデータベースオブジェクトを取得
         val db = _helper.writableDatabase
-        //主キーによる前削除
-        val sql = "DELETE FROM cocktailmemos"
-        //SQLの実行(クエリ)
-        db.delete("cocktailmemos", null, null)
-
         keylist.saveData(db)
         super.onPause()
     }
