@@ -134,6 +134,23 @@ class KeywordList(context: Context) {
     }
 
     /**
+     * リストを削除する。データベース上からも削除する
+     *
+     */
+    public fun removeListAll() {
+
+        Log.d("KeywordList", "removeListAll in")
+
+        //全てのデータベース情報を削除
+        _helper.cleanDBData()
+
+        //すべてのリスト情報を削除
+        keywordList.clear()
+
+        Log.d("KeywordList", "removeListAll out")
+    }
+
+    /**
      * データベースヘルパのクローズ処理
      */
     fun close() {

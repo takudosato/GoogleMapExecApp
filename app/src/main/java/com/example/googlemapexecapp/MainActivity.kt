@@ -4,11 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
 import android.location.LocationManager
-import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -18,15 +14,15 @@ import android.view.*
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import java.net.URLEncoder
 import java.util.*
 
-class MainActivity : AppCompatActivity()   {
+class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.NoticeDialogLister  {
 
     //キーワードエディットテキストオブジェクト
     private lateinit var etKeyword: EditText
@@ -74,7 +70,7 @@ class MainActivity : AppCompatActivity()   {
         keylist.startList()
 
         //キーワードエディットテキストオブジェクト取得
-        etKeyword = findViewById<EditText>(R.id.etInputKeyword)
+        etKeyword = findViewById(R.id.etInputKeyword)
 
         //TextWatcherでキーワード入力状況を監視する
         etKeyword.addTextChangedListener(object : TextWatcher {
@@ -86,7 +82,7 @@ class MainActivity : AppCompatActivity()   {
             //文字列入力中に呼び出される
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
 
-                Log.d("MainActivity", "onTextChanged in count = " + count)
+                Log.d("MainActivity", "onTextChanged in count = $count")
 
                 //エディットボックスが空欄の場合は、ボタンを無効とする
                 when(count) {
@@ -164,17 +160,13 @@ class MainActivity : AppCompatActivity()   {
         /**
          * リスト1行分中でキーワードを表示する画面部品。
          */
-        var tvKeyword: TextView
+        var tvKeyword: TextView = itemView.findViewById(R.id.tvKeyword)
+
         /**
          * リスト1行分中で日時を表示する画面部品。
          */
-        var tvDaytime: TextView
+        var tvDaytime: TextView = itemView.findViewById(R.id.tvDaytime)
 
-        init {
-            //引数で渡されたリスト1行分の画面部品中から表示に使われるTextViewを取得。
-            tvKeyword = itemView.findViewById(R.id.tvKeyword)
-            tvDaytime = itemView.findViewById(R.id.tvDaytime)
-        }
     }
 
     /**
@@ -277,7 +269,7 @@ class MainActivity : AppCompatActivity()   {
 
             //キーワードでGoogleMapを起動する
             val mapIntent = Gglmap.makeIntent(keyword)
-            //startActivity(mapIntent)
+            startActivity(mapIntent)
 
             //-----------------------------
             //キーワードと時刻をリストに登録
@@ -327,15 +319,8 @@ class MainActivity : AppCompatActivity()   {
             //ゴミ箱が選択された場合
             R.id.opMenuDelete -> {
                 //ダイアログメッセージを表示
-                val dialogFragment = AllListDeleConfirmDialogFragment()
-
-                dialogFragment.show(supportFragmentManager, "AllListDeleConfirmDialogFragment")
-
-                val nn = dialogFragment.testd
-                if (nn == 2 ) {
-                    keylist.saveData()
-                }
-
+                val dialogFragment = AllListDelConfirmDialogFragment()
+                dialogFragment.show(supportFragmentManager, "AllListDelConfirmDialogFragment")
                 Log.d("MainActivity", "R.id.opMenuDelete end")
             }
 
@@ -375,16 +360,11 @@ class MainActivity : AppCompatActivity()   {
         //EditTextのキーワードでGoogleMapを起動する
         val keywordstr = etKeyword.text.toString()
         val mapIntent = Gglmap.makeIntent(keywordstr)
-        //startActivity(mapIntent)
+        startActivity(mapIntent)
 
         //-----------------------------
         //　Editbox空欄化
         etKeyword.setText(null)
-
-        //-----------------------------
-        //現在時刻取得
-        val date: Date = Date()
-        val daytime: String = DateFormat.format("yyyy/MM/dd kk:mm:ss", date).toString()
 
         //-----------------------------
         //キーワードと時刻をリストに登録
@@ -398,6 +378,28 @@ class MainActivity : AppCompatActivity()   {
         Log.d("MainActivity", "onMapShowButtonClick out")
     }
 
+    /**
+     * 削除ダイアログからのコールバック
+     * 削除が選択された場合
+     *
+     * @param dialog
+     */
+    override fun onDialogPositiveClick(dialog: DialogFragment) {
+        //リストを全削除
+        this.keylist.removeListAll()
+
+        //アダプターにリストの再描画を指示する
+        adapter.notifyDataSetChanged()
+    }
+
+    /**
+    * 削除ダイアログからのコールバック
+    * 削除が選択された場合は処理なし
+    *
+    * @param dialog
+    */
+    override fun onDialogNegativeClick(dialog: DialogFragment) {
+    }
 
 }
 
