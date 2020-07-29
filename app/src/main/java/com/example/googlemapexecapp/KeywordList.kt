@@ -16,6 +16,8 @@ class KeywordList(context: Context) {
     //キーワードの情報が格納されたリスト
     private val keywordList: MutableList<MutableMap<String, String>> = mutableListOf()
 
+
+
     /**
      * 初期化処理
      */
@@ -24,6 +26,8 @@ class KeywordList(context: Context) {
         parentContext = context
         //データベースヘルパーの登録
         _helper = DatabaseHelper(parentContext)
+        //最新URIの初期化
+        resentUri = ""
     }
 
     public fun get() :MutableList<MutableMap<String, String>> {
@@ -42,11 +46,18 @@ class KeywordList(context: Context) {
 
         Log.d("KeywordList", "add in")
 
+        var keywordl = keyword
+        //もし現在地のGPS文字列uriであれば、リストには「現在地」と表示し、uriは別途保持する
+        if (keyword.startsWith("geo:")) {
+            resentUri = keyword
+            keywordl = RUI_LISTSTR
+        }
+
         run loop@{
             //重複を防ぐために、同じKeywordの要素を削除し、先頭に追加する
             if (keywordList.isNotEmpty()) {
                 keywordList.forEach {
-                    if (it.containsValue(keyword)) {
+                    if (it.containsValue(keywordl)) {
                         keywordList.remove(it)
                         return@loop
                     }
@@ -67,7 +78,7 @@ class KeywordList(context: Context) {
 
         //-----------------------------
         //新たに要素を先頭に追加する
-        val elmnt =  mutableMapOf("keyword" to keyword, "daytime" to settime)
+        val elmnt =  mutableMapOf("keyword" to keywordl, "daytime" to settime)
 
         //リストに追加。リストの最後か先頭かで切り分け
         if (isAddLast) {
@@ -123,8 +134,13 @@ class KeywordList(context: Context) {
         //データベースに登録
         if (keywordList.isNotEmpty()) {
             keywordList.forEach {
-                val keyword = it["keyword"].toString()
+                var keyword = it["keyword"].toString()
                 val daytime = it["daytime"].toString()
+
+                //”現在地”の場合は、データベースにはURIを登録する
+                if (keyword == RUI_LISTSTR) {
+                    keyword = resentUri
+                }
 
                 //データベースに１データ登録
                 _helper.insertDBOnedata(keyword, daytime)
@@ -146,6 +162,7 @@ class KeywordList(context: Context) {
 
         //すべてのリスト情報を削除
         keywordList.clear()
+        resentUri = ""
 
         Log.d("KeywordList", "removeListAll out")
     }
@@ -157,5 +174,13 @@ class KeywordList(context: Context) {
         Log.d("KeywordList", "close in")
         _helper.close()
         Log.d("KeywordList", "close out")
+    }
+
+
+    companion object {
+        public val RUI_LISTSTR: String = "現在地"
+
+        //最新のURI
+        public var resentUri: String = ""
     }
 }

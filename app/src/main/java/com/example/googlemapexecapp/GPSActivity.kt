@@ -22,11 +22,16 @@ class GPSActivity : AppCompatActivity() {
     //GPS情報を持つクラス
     private lateinit var gps: GPS
 
+    var uriStr: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d("GPSActivity", "onCreate in")
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_g_p_s)
+
+        //GPS値の初期化
+        uriStr = ""
 
         //「戻る」メニューボタンを表示する
         //supportActionBarはNullableなので、セーフコール演算子を使ってメソッドを呼び出す
@@ -76,8 +81,13 @@ class GPSActivity : AppCompatActivity() {
 
         //戻るボタンはandroid.R.id.home
         if (item.itemId == android.R.id.home) {
+
+            val result = Intent()
+            result.putExtra("ruiStr", uriStr)
+            setResult(Activity.RESULT_OK, result)
+
             Log.d("GPSActivity", "onOptionsItemSelected finish()")
-            finish()//ここで関数は終わらない
+            finish()
         }
 
         Log.d("GPSActivity", "onOptionsItemSelected out")
@@ -96,7 +106,7 @@ class GPSActivity : AppCompatActivity() {
         Log.d("GPSActivity", "onMapShowButtonClick in")
 
         //GPS情報からURIを作成
-        val uriStr = "geo:${gps._latitude},${gps._longitude}"
+        uriStr = "geo:${gps._latitude},${gps._longitude}"
         val uri = Uri.parse(uriStr)
 
         //URIでgooglemapを起動

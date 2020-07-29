@@ -1,16 +1,11 @@
 package com.example.googlemapexecapp
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.text.format.DateFormat
 import android.util.Log
 import android.view.*
 import android.widget.Button
@@ -22,7 +17,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import java.util.*
 
 class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.NoticeDialogLister  {
 
@@ -232,7 +226,7 @@ class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.Notice
         Log.d("RecyclerListAdapter", "onRequestPermissionsResult in")
 
         //ACCESS_LOCATIONに対するパーミッションで許可が選択されなかったら終了
-        if(requestCode == 1000 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if(requestCode == 1000 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
             Log.d("RecyclerListAdapter", "onRequestPermissionsResult finish")
             finish()
         }
@@ -241,38 +235,6 @@ class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.Notice
 
         return
     }
-
-
-
-    /**
-     * GPSLocationListener
-     * 位置情報の変更時に呼び出される
-     *
-     */
-
-    private inner class GPSLocationListener : LocationListener {
-        override fun onLocationChanged(p0: Location) {
-
-            Log.d("GPSLocationListener", "onLocationChanged in")
-
-            //GPS情報を取得
-            //_latitude = p0.latitude
-            //_longitude = p0.longitude
-
-            //コールバックが設定されていたら通知
-            //changeGPSpos?.invoke()
-
-            Log.d("GPSLocationListener", "onLocationChanged out")
-        }
-
-        override fun onProviderDisabled(provider: String) {}
-
-        override fun onProviderEnabled(provider: String) {}
-
-        override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
-    }
-
-
 
     /**
      * リストをタップした時のリスナクラス。
@@ -349,7 +311,7 @@ class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.Notice
                 //インテントオブジェクトを生成
                 val intent = Intent(applicationContext, GPSActivity::class.java)
                 //オフジェクトを起動
-                startActivity(intent)
+                startActivityForResult(intent, resCodeGPS)
                 Log.d("MainActivity", "R.id.opMenuOptionGPS end")
             }
 
@@ -368,29 +330,56 @@ class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.Notice
     }
 
     /**
+     * GPSアクティビティからの戻り情報を受け取る
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        Log.d("MainActivity", "onActivityResult in")
+
+        //GPSActivityからのリザルトコードの場合
+        if (requestCode == resCodeGPS) {
+            Log.d("MainActivity", "resCodeGPS in")
+            //GPSで検索したURIを受け取る
+            val uri = data?.getStringExtra("ruiStr")
+            if (uri != null) {
+                if (uri != "") {
+                    //リストに追加
+                    keylist.add(uri, "")
+
+                    //アダプターにリストの再描画を指示する
+                    adapter.notifyDataSetChanged()
+                }
+            }
+            Log.d("MainActivity", "resCodeGPS out")
+        }
+        Log.d("MainActivity", "onActivityResult out")
+    }
+
+    /**
      * onMapShowButtonClick
      * Map表示ボタン押下時の処理。layoutのxmlに定義する
      *
      * @param view
      */
-    fun onMapShowButtonClick(view: View) {
+    fun onMapShowButtonClick(@Suppress("UNUSED_PARAMETER")  view: View) {
         Log.d("MainActivity", "onMapShowButtonClick in")
 
-        //----------------------------
         //EditTextのキーワードでGoogleMapを起動する
         val keywordstr = etKeyword.text.toString()
         val mapIntent = Gglmap.makeIntent(keywordstr)
         startActivity(mapIntent)
 
-        //-----------------------------
         //　Editbox空欄化
-        etKeyword.setText(null)
+        etKeyword.text = null
 
-        //-----------------------------
         //キーワードと時刻をリストに登録
         keylist.add(keywordstr, "")
 
-        //-----------------------------
         //アダプターにリストの再描画を指示する
         adapter.notifyDataSetChanged()
 
@@ -419,6 +408,10 @@ class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.Notice
     * @param dialog
     */
     override fun onDialogNegativeClick(dialog: DialogFragment) {
+    }
+
+    companion object {
+        private const val resCodeGPS = 200
     }
 
 }
