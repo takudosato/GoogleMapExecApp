@@ -5,15 +5,22 @@
     <!-- オーバーフローメニュー
           showAsActionがandroidでなくappである理由は、MainActivityがAppCompatActivityを継承したものだから-->
 
+    <item
+        android:id="@+id/opMenuDelete"
+        android:orderInCategory="1"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="DELETE"
+        app:showAsAction="always" />
+
     <!-- "現在地" -->
     <item
-        android:id="@+id/ofMenuOptionGPS"
+        android:id="@+id/opMenuOptionGPS"
         app:showAsAction="never"
         android:title="@string/strid_menu_list_options_GPS" />
 
     <!-- "アプリ終了" -->
     <item
-        android:id="@+id/ofMenuOptionExit"
+        android:id="@+id/opMenuOptionExit"
         app:showAsAction="never"
         android:title="@string/strid_menu_list_options_exit" />
 </menu>

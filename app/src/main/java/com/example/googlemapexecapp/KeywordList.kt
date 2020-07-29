@@ -1,26 +1,46 @@
 package com.example.googlemapexecapp
 
+import android.content.Context
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.text.format.DateFormat
+import android.util.Log
 import java.util.*
 
-class KeywordList {
+class KeywordList(context: Context) {
 
+    //親Activityクラスを保持
+    private val parentContext: Context
+    //データベースヘルパーオブジェクト
+    private val _helper: DatabaseHelper
     //キーワードの情報が格納されたリスト
     private val keywordList: MutableList<MutableMap<String, String>> = mutableListOf()
 
+    /**
+     * 初期化処理
+     */
     init {
-
+        //Activityのコンテキストを保持
+        parentContext = context
+        //データベースヘルパーの登録
+        _helper = DatabaseHelper(parentContext)
     }
 
     public fun get() :MutableList<MutableMap<String, String>> {
+        Log.d("KeywordList", "get in / out")
         return keywordList
     }
 
     /**
+     * リストに一行登録する
      *
+     * @param keyword　検索文字列（キーワード）
+     * @param daytime　検索時間
+     * @param isAddLast　リストの最後に追加する場合は、ここにtrueとする
      */
     public fun add(keyword: String, daytime: String, isAddLast: Boolean = false) {
+
+        Log.d("KeywordList", "add in")
 
         run loop@{
             //重複を防ぐために、同じKeywordの要素を削除し、先頭に追加する
@@ -49,78 +69,76 @@ class KeywordList {
         //新たに要素を先頭に追加する
         val elmnt =  mutableMapOf("keyword" to keyword, "daytime" to settime)
 
+        //リストに追加。リストの最後か先頭かで切り分け
         if (isAddLast) {
             keywordList.add(elmnt)
         }
         else {
             keywordList.add(0, elmnt)
         }
-
+        Log.d("KeywordList", "add out")
     }
 
     /**
      * キーワードリストのスタート処理
      * Databaseにデータがあれば、それを取得して表示する
      *
-     * @param db
      */
-    public fun startList(db: SQLiteDatabase){
+    public fun startList(){
 
-        //主キーによる検索SQL文字列の用意
-        val sql = "SELECT * FROM cocktailmemos"
-        //SQLの実行(クエリ)
-        val cursor = db.rawQuery(sql, null)
+        Log.d("KeywordList", "startList in")
 
-        //データベースから取得した値を格納する変数の用意
-        var kw = ""
-        var dt = ""
+        //データベースアクセスのカーソルを取得
+        val cursor: Cursor = _helper.getDBCursor()
 
         //SQL実行の戻り値であるカーソルオブジェクトをループさせてデータベースのデータを取得する
         while(cursor.moveToNext()) {
             //カラムインデックス値を取得
-            val idxkw = cursor.getColumnIndex("keyword")
+            val idxkw = cursor.getColumnIndex(DatabaseHelper.FeedEntry.COLUMN_NAME_KEYWORD)
             //カラムのインデックス値を元に実際のデータを取得
-            kw = cursor.getString(idxkw)
-            val idxdt = cursor.getColumnIndex("daytime")
+            val keyword = cursor.getString(idxkw)
+            val idxdt = cursor.getColumnIndex(DatabaseHelper.FeedEntry.COLUMN_NAME_DAYTIME)
             //カラムのインデックス値を元に実際のデータを取得
-            dt = cursor.getString(idxdt)
+            val daytime = cursor.getString(idxdt)
 
             //-----------------------------
             //キーワードと時刻をリストに登録
-            this.add(kw, dt, true)
+            this.add(keyword, daytime, true)
         }
+        Log.d("KeywordList", "startList out")
     }
 
     /**
-* リスト情報をDatabaseに登録する
-    *
-     * @param db
+     * リストのデータをデータベースに登録する
+     * データベース登録を全て削除し、新規に現在のリスト情報を登録する
+     *
      */
-    public fun saveData(db: SQLiteDatabase){
+    public fun saveData(){
 
-        //主キーによる前削除
-        val sql = "DELETE FROM cocktailmemos"
-        //SQLの実行(クエリ)
-        db.delete("cocktailmemos", null, null)
+        Log.d("KeywordList", "saveData in")
 
-        //重複を防ぐために、同じKeywordの要素を削除し、先頭に追加する
+        //全てのデータベース情報を削除
+        _helper.cleanDBData()
+
+        //データベースに登録
         if (keywordList.isNotEmpty()) {
-
-            //インサート用SQL文字列の用意
-            val sqlInsert = "INSERT INTO cocktailmemos (keyword, daytime) VALUES (?, ?)"
-            //プリペアードステートメントを取得
-            var stmt = db.compileStatement(sqlInsert)
-
             keywordList.forEach {
-                val keyword = it["keyword"]
-                val daytime = it["daytime"]
+                val keyword = it["keyword"].toString()
+                val daytime = it["daytime"].toString()
 
-                stmt.bindString(1, keyword)
-                stmt.bindString(2, daytime)
-
-                //インサートSQLの実行
-                stmt.executeInsert()
+                //データベースに１データ登録
+                _helper.insertDBOnedata(keyword, daytime)
             }
         }
+        Log.d("KeywordList", "saveData out")
+    }
+
+    /**
+     * データベースヘルパのクローズ処理
+     */
+    fun close() {
+        Log.d("KeywordList", "close in")
+        _helper.close()
+        Log.d("KeywordList", "close out")
     }
 }

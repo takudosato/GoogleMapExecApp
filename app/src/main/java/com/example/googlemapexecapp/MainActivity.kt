@@ -31,12 +31,12 @@ class MainActivity : AppCompatActivity()   {
     //キーワードエディットテキストオブジェクト
     private lateinit var etKeyword: EditText
 
-    private val keylist = KeywordList()
+    //キーワードリストクラス
+    private val keylist = KeywordList(this@MainActivity)
 
+    //キーワード用アダプター
     private lateinit var adapter: RecyclerListAdapter
 
-    //データベースヘルパーオブジェクト
-    private val _helper = DatabaseHelper(this@MainActivity)
 
     /**
      * MainActivityのonCreate
@@ -70,10 +70,8 @@ class MainActivity : AppCompatActivity()   {
         mapBtn.isEnabled = false
 
         //-----------------------
-        // 情報をDBに登録する
-        //データベースヘルパークラスからデータベースオブジェクトを取得
-        val db = _helper.writableDatabase
-        keylist.startList(db)
+        // リストにデータをロードする
+        keylist.startList()
 
         //キーワードエディットテキストオブジェクト取得
         etKeyword = findViewById<EditText>(R.id.etInputKeyword)
@@ -101,7 +99,6 @@ class MainActivity : AppCompatActivity()   {
                         mapBtn.isEnabled = true
                     }
                 }
-
                 Log.d("MainActivity", "onTextChanged out")
             }
         })
@@ -124,30 +121,46 @@ class MainActivity : AppCompatActivity()   {
         //RecyclerViewに区切り線オブジェクトを設定。
         lvMenu.addItemDecoration(decorator)
 
-
-
         Log.d("MainActivity", "onCreate out")
     }
 
+    /**
+     * Acrtivityから制御が移動したら呼ばれる
+     * Databaseの全ての情報を再登録する
+     *
+     */
     override fun onPause() {
-        //---------------------
+
+        Log.d("MainActivity", "onPause in")
+
         //Databaseの全ての情報を再登録
-        //データベースヘルパークラスからデータベースオブジェクトを取得
-        val db = _helper.writableDatabase
-        keylist.saveData(db)
+        keylist.saveData()
+
         super.onPause()
+
+        Log.d("MainActivity", "onPause out")
     }
 
+    /**
+     * 終了時に呼ばれる
+     *　データベース終了処理
+     */
     override fun onDestroy() {
 
-        _helper.close()
+        Log.d("MainActivity", "onDestroy in")
+
+        //キーリスト・データベース終了処理
+        keylist.close()
         super.onDestroy()
+
+        Log.d("MainActivity", "onDestroy out")
     }
 
     /**
      * RecyclerViewのビューホルダクラス。
      */
     private inner class RecyclerListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
         /**
          * リスト1行分中でキーワードを表示する画面部品。
          */
@@ -169,6 +182,9 @@ class MainActivity : AppCompatActivity()   {
      */
     private inner class RecyclerListAdapter(private val _listData: MutableList<MutableMap<String, String>>): RecyclerView.Adapter<RecyclerListViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerListViewHolder {
+
+            Log.d("RecyclerListAdapter", "onCreateViewHolder in")
+
             //レイアウトインフレータを取得。
             val inflater = LayoutInflater.from(applicationContext)
             //lwlist.xmlをインフレートし、1行分の画面部品とする。
@@ -177,11 +193,17 @@ class MainActivity : AppCompatActivity()   {
             view.setOnClickListener(ItemClickListener())
             //ビューホルダオブジェクトを生成。
             val holder = RecyclerListViewHolder(view)
+
+            Log.d("RecyclerListAdapter", "onCreateViewHolder out")
+
             //生成したビューホルダをリターン。
             return holder
         }
 
         override fun onBindViewHolder(holder: RecyclerListViewHolder, position: Int) {
+
+            Log.d("RecyclerListAdapter", "onBindViewHolder in")
+
             //リストデータから該当1行分のデータを取得。
             val item = _listData[position]
             //キーワード文字列を取得。
@@ -192,9 +214,15 @@ class MainActivity : AppCompatActivity()   {
             //メニュー名と金額をビューホルダ中のTextViewに設定。
             holder.tvKeyword.text = keyword
             holder.tvDaytime.text = daytime
+
+            Log.d("RecyclerListAdapter", "onBindViewHolder out")
+
         }
 
         override fun getItemCount(): Int {
+
+            Log.d("RecyclerListAdapter", "getItemCount in / out")
+
             //リストデータ中の件数をリターン。
             return _listData.size
         }
@@ -212,6 +240,9 @@ class MainActivity : AppCompatActivity()   {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
+
+        Log.d("RecyclerListAdapter", "onRequestPermissionsResult in")
+
         //ACCESS_LOCATIONに対するパーミッションで許可が選択されたら
         if(requestCode == 1000 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             //LocationManagerオブジェクトを取得
@@ -225,6 +256,9 @@ class MainActivity : AppCompatActivity()   {
         }
 
         finish()
+
+        Log.d("RecyclerListAdapter", "onRequestPermissionsResult out")
+
         return
     }
 
@@ -233,6 +267,8 @@ class MainActivity : AppCompatActivity()   {
      */
     private inner class ItemClickListener : View.OnClickListener {
         override fun onClick(view: View) {
+
+            Log.d("ItemClickListener", "onClick in")
 
             //タップされたLinearLayout内にあるキーワードTextViewを取得。
             val tvKeyword = view.findViewById<TextView>(R.id.tvKeyword)
@@ -250,6 +286,8 @@ class MainActivity : AppCompatActivity()   {
             //-----------------------------
             //アダプターにリストの再描画を指示する
             adapter.notifyDataSetChanged()
+
+            Log.d("ItemClickListener", "onClick out")
         }
     }
 
@@ -285,20 +323,36 @@ class MainActivity : AppCompatActivity()   {
 
         //メニューで選択された場合
         when(item.itemId) {
+
+            //ゴミ箱が選択された場合
+            R.id.opMenuDelete -> {
+                //ダイアログメッセージを表示
+                val dialogFragment = AllListDeleConfirmDialogFragment()
+
+                dialogFragment.show(supportFragmentManager, "AllListDeleConfirmDialogFragment")
+
+                val nn = dialogFragment.testd
+                if (nn == 2 ) {
+                    keylist.saveData()
+                }
+
+                Log.d("MainActivity", "R.id.opMenuDelete end")
+            }
+
             //現在地が選択された場合、GPSActivityに遷移する
-            R.id.ofMenuOptionGPS -> {
+            R.id.opMenuOptionGPS -> {
                 //インテントオブジェクトを生成
                 val intent = Intent(applicationContext, GPSActivity::class.java)
                 //オフジェクトを起動
                 startActivity(intent)
-                Log.d("MainActivity", "startActivity")
+                Log.d("MainActivity", "R.id.opMenuOptionGPS end")
             }
 
             //終了が選択された場合、終了処理を行う
-            R.id.ofMenuOptionExit -> {
+            R.id.opMenuOptionExit -> {
                 //finishAndRemoveTask()はAPILevel21以降
                 //finish()の場合、excludeFromRecents="true"を設定しないとタスク画面の履歴に残る
-                Log.d("MainActivity", "onOptionsItemSelected finish()")
+                Log.d("MainActivity", "R.id.opMenuOptionExit finish()")
                 finish()
             }
         }
