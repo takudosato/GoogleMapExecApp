@@ -42,6 +42,8 @@ class GPSActivity : AppCompatActivity() {
             dispGPSInfo()
         }
 
+
+
         Log.d("GPSActivity", "onCreate out")
     }
 

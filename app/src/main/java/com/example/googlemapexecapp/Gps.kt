@@ -35,29 +35,15 @@ public class GPS(parentACT: Activity) {
     //GPSの位置情報が変わった時にコールバックする口
     var changeGPSpos: (() -> Unit)? = null
 
-    public fun CheckPermission() : Boolean {
-
-        val locationListener = GPSLocationListener()
-        if (ActivityCompat.checkSelfPermission(parent.applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            //許可を求めるダイアログを表示する
-            val permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
-            ActivityCompat.requestPermissions(parent, permissions, 1000)
-            return false
-        }
-        return true
-    }
-
     /**
      * StartGPS
      * GPSを有効にする。Permissionの許可が無ければfalseを返す
      *
-     * @return
+     * @return true GPS有効
      */
     public fun StartGPS() : Boolean {
 
         Log.d("GPS", "StartGPS in")
-
-
 
         //GPS機能を有効にする
         val locationManager = parent.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -68,6 +54,7 @@ public class GPS(parentACT: Activity) {
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
 
+        Log.d("GPS", "StartGPS out")
         return true
     }
 

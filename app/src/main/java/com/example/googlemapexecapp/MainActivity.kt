@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.text.Editable
@@ -49,16 +51,9 @@ class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.Notice
         if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             //許可を求めるダイアログを表示する
             val permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
-            ActivityCompat.requestPermissions(this, permissions, 1000)
+            ActivityCompat.requestPermissions(this@MainActivity, permissions, 1000)
             return
         }
-        /*
-        val gpsc = GPS(this)
-        if(!gpsc.CheckPermission()){
-            return
-        }
-
-         */
 
         //Map表示ボタンのオブジェクト取得
         val mapBtn = findViewById<Button>(R.id.btMapKeyword)
@@ -227,6 +222,7 @@ class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.Notice
      * @param permissions
      * @param grantResults
      */
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -235,24 +231,48 @@ class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.Notice
 
         Log.d("RecyclerListAdapter", "onRequestPermissionsResult in")
 
-        //ACCESS_LOCATIONに対するパーミッションで許可が選択されたら
+        //ACCESS_LOCATIONに対するパーミッションで許可が選択されなかったら終了
         if(requestCode == 1000 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            //LocationManagerオブジェクトを取得
-            val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            //位置情報が更新された際のリスナオブジェクトを生成
-           // val locationListener = GPSLocationListener()
-
-            if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                return
-            }
+            Log.d("RecyclerListAdapter", "onRequestPermissionsResult finish")
+            finish()
         }
-
-        finish()
 
         Log.d("RecyclerListAdapter", "onRequestPermissionsResult out")
 
         return
     }
+
+
+
+    /**
+     * GPSLocationListener
+     * 位置情報の変更時に呼び出される
+     *
+     */
+
+    private inner class GPSLocationListener : LocationListener {
+        override fun onLocationChanged(p0: Location) {
+
+            Log.d("GPSLocationListener", "onLocationChanged in")
+
+            //GPS情報を取得
+            //_latitude = p0.latitude
+            //_longitude = p0.longitude
+
+            //コールバックが設定されていたら通知
+            //changeGPSpos?.invoke()
+
+            Log.d("GPSLocationListener", "onLocationChanged out")
+        }
+
+        override fun onProviderDisabled(provider: String) {}
+
+        override fun onProviderEnabled(provider: String) {}
+
+        override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+    }
+
+
 
     /**
      * リストをタップした時のリスナクラス。
