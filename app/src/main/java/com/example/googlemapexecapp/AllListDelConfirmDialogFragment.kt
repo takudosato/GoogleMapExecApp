@@ -7,7 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.DialogFragment
 
-class AllListDeleConfirmDialogFragment: DialogFragment() {
+class AllListDelConfirmDialogFragment: DialogFragment() {
 
     public var testd: Int = 1
 
