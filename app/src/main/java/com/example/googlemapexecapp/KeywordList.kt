@@ -168,6 +168,13 @@ class KeywordList(context: Context) {
     }
 
     /**
+     * リストが空であるかどうかを返す
+     */
+    fun IsListEmpty() : Boolean {
+        return keywordList.isEmpty()
+    }
+
+    /**
      * データベースヘルパのクローズ処理
      */
     fun close() {

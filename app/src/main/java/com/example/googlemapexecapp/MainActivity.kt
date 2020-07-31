@@ -24,7 +24,8 @@ class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.Notice
     private lateinit var etKeyword: EditText
 
     //キーワードリストクラス
-    private val keylist = KeywordList(this@MainActivity)
+    private val keylist
+            = KeywordList(this@MainActivity)
 
     //キーワード用アダプター
     private lateinit var adapter: RecyclerListAdapter
@@ -41,13 +42,6 @@ class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.Notice
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            //許可を求めるダイアログを表示する
-            val permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
-            ActivityCompat.requestPermissions(this@MainActivity, permissions, 1000)
-            return
-        }
 
         //Map表示ボタンのオブジェクト取得
         val mapBtn = findViewById<Button>(R.id.btMapKeyword)
@@ -105,6 +99,14 @@ class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.Notice
         val decorator = DividerItemDecoration(applicationContext, layout.orientation)
         //RecyclerViewに区切り線オブジェクトを設定。
         lvMenu.addItemDecoration(decorator)
+
+        //GPSのパーミッション確認
+        if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //許可を求めるダイアログを表示する
+            val permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+            ActivityCompat.requestPermissions(this@MainActivity, permissions, 1000)
+            return
+        }
 
         Log.d("MainActivity", "onCreate out")
     }
@@ -286,7 +288,7 @@ class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.Notice
     }
 
     /**
-     * onOptionsItemSelected
+     * オプションアイテムがタップされたときのリスナ
      *
      * @param item
      * @return
@@ -300,10 +302,13 @@ class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.Notice
 
             //ゴミ箱が選択された場合
             R.id.opMenuDelete -> {
-                //ダイアログメッセージを表示
-                val dialogFragment = AllListDelConfirmDialogFragment()
-                dialogFragment.show(supportFragmentManager, "AllListDelConfirmDialogFragment")
-                Log.d("MainActivity", "R.id.opMenuDelete end")
+                //リストが空でなければメッセージでリストの削除を確認するメッセージを表示する
+                if (!keylist.IsListEmpty()) {
+                    //ダイアログメッセージを表示
+                    val dialogFragment = AllListDelConfirmDialogFragment()
+                    dialogFragment.show(supportFragmentManager, "AllListDelConfirmDialogFragment")
+                    Log.d("MainActivity", "R.id.opMenuDelete end")
+                }
             }
 
             //現在地が選択された場合、GPSActivityに遷移する

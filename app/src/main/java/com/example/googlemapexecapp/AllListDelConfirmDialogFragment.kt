@@ -48,7 +48,7 @@ class AllListDelConfirmDialogFragment: DialogFragment() {
         //ダイアログのタイトルを生成
         builder.setTitle("確認")
         //ダイアログのメッセージを生成
-        builder.setMessage("メッセージ")
+        builder.setMessage("全ての履歴を削除してよろしいですか？")
         //ボタンを設定
         builder.setPositiveButton("はい", DialogButtonClickListener())
         builder.setNegativeButton("いいえ", DialogButtonClickListener())
