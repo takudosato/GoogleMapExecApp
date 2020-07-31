@@ -24,12 +24,10 @@ class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.Notice
     private lateinit var etKeyword: EditText
 
     //キーワードリストクラス
-    private val keylist
-            = KeywordList(this@MainActivity)
+    private val keylist = KeywordList(this@MainActivity)
 
     //キーワード用アダプター
     private lateinit var adapter: RecyclerListAdapter
-
 
     /**
      * MainActivityのonCreate
@@ -396,7 +394,7 @@ class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.Notice
      * 削除ダイアログからのコールバック
      * 削除が選択された場合
      *
-     * @param dialog
+     * @param dialog　AllListDelConfirmDialogFragmentクラス
      */
     override fun onDialogPositiveClick(dialog: DialogFragment) {
         //リストを全削除
@@ -410,7 +408,7 @@ class MainActivity : AppCompatActivity(), AllListDelConfirmDialogFragment.Notice
     * 削除ダイアログからのコールバック
     * 削除が選択された場合は処理なし
     *
-    * @param dialog
+    * @param dialog　AllListDelConfirmDialogFragmentクラス
     */
     override fun onDialogNegativeClick(dialog: DialogFragment) {
     }

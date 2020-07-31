@@ -19,7 +19,10 @@ class AllListDelConfirmDialogFragment: DialogFragment() {
 
     var mLister:NoticeDialogLister? = null
 
-
+    /**
+     * アタッチ時に呼び出される。
+     * onCreateDialogよりも先に行う処理として、呼び出し側のインターフェース関数の実装を確認する。
+     */
     override fun onAttach(context: Context) {
 
         Log.d("DialogFragment", "onAttach in")

@@ -37,6 +37,7 @@ class GPSActivity : AppCompatActivity() {
         //supportActionBarはNullableなので、セーフコール演算子を使ってメソッドを呼び出す
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        //GPSによる位置情報取得処理のスター
         gps = GPS(this)
         if(!gps.StartGPS()) {
             return
@@ -46,7 +47,6 @@ class GPSActivity : AppCompatActivity() {
         gps.changeGPSpos = {
             dispGPSInfo()
         }
-
 
 
         Log.d("GPSActivity", "onCreate out")
